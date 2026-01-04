@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PP Collection | Exclusive Editions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&family=Montserrat:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #fdfbfb; scroll-behavior: smooth; overflow-x: hidden; }
+        .brand-font { font-family: 'Playfair Display', serif; }
+        
+        /* AUTH & MODALS */
+        .auth-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .auth-box { background: white; padding: 40px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; position: relative; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .close-auth { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #666; }
+        .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; background: white; color: #374151; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .google-btn:hover { background-color: #f9fafb; border-color: #be185d; transform: translateY(-1px); }
+
+        /* HEADER UI */
+        .header-container { display: flex; align-items: center; justify-content: space-between; height: 100%; position: relative; }
+        .logo-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; position: absolute; left: 50%; transform: translateX(-50%); }
+        .logo-circle { width: 38px; height: 38px; background-color: #1f2937; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; line-height: 1; padding-bottom: 2px; }
+        .logo-text { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 500; color: #1f2937; letter-spacing: -0.5px; text-transform: lowercase; }
+
+        /* SIDE MENU (HAMBURGER) */
+        .side-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 4000; backdrop-filter: blur(2px); }
+        .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: white; z-index: 4001; transition: left 0.3s ease-in-out; padding: 20px; display: flex; flex-direction: column; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+        .side-menu.open { left: 0; }
+        .menu-item { padding: 15px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; font-weight: 600; color: #374151; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .menu-item:hover { color: #be185d; }
+        .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+
+        /* HEADER AD */
+        .banner-container { height: 40px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; background-color: #be185d; }
+        .banner-text { position: absolute; width: 100%; text-align: center; transition: all 0.5s ease-in-out; opacity: 0; transform: translateY(20px); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: white; padding: 0 10px; }
+        @media(min-width: 768px) { .banner-text { font-size: 12px; letter-spacing: 2px; } }
+        .banner-text.active { opacity: 1; transform: translateY(0); }
+
+        /* PRODUCT CARD STYLES */
+        .product-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f3f4f6; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(190, 24, 93, 0.1); border-color: #fce7f3; }
+        .product-img-container { height: 320px; overflow: hidden; position: relative; background: #f8fafc; cursor: pointer; }
+        .scroll-zoom-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .product-card:hover .scroll-zoom-img { transform: scale(1.05); }
+        .badge-sale { position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.9); color: #be185d; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); backdrop-filter: blur(4px); }
+        .badge-oos { position: absolute; top: 10px; left: 10px; background: #1f2937; color: white; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .product-details { padding: 14px; text-align: left; }
+        .product-title { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 6px; line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+        .price-current { font-size: 16px; font-weight: 700; color: #be185d; font-family: 'Montserrat', sans-serif; }
+        .price-mrp { font-size: 12px; text-decoration: line-through; color: #9ca3af; }
+        .price-off { font-size: 10px; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px; }
+        .add-btn { width: 100%; background: #1f2937; color: white; padding: 10px; border-radius: 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; }
+        .add-btn:active { transform: scale(0.98); }
+        .add-btn:hover { background: #000; }
+        .add-btn.disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+        .grayscale-img { filter: grayscale(100%); opacity: 0.6; }
+
+        /* POPUPS */
+        .full-window { display: none; position: fixed; inset: 0; background: white; z-index: 1000; flex-direction: column; overflow-y: auto; }
+        .window-active { display: flex; }
+        .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .popup-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 280px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .size-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; align-items: flex-end; justify-content: center; }
+        .size-modal-content { background: white; padding: 25px; border-radius: 30px 30px 0 0; width: 100%; max-width: 500px; text-align: center; }
+        .size-btn { border: 2px solid #f3f4f6; padding: 12px; border-radius: 15px; font-weight: 600; cursor: pointer; }
+        .size-btn.selected { border-color: #be185d; background: #fdf2f8; color: #be185d; }
+
+        /* POLICY MODAL */
+        .policy-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 6000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .policy-modal-box { background: white; width: 95%; max-width: 600px; max-height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; animation: zoomIn 0.3s ease; }
+        .policy-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdf2f8; }
+        .policy-body { padding: 20px; overflow-y: auto; text-align: left; font-size: 13px; line-height: 1.8; color: #374151; }
+        .policy-body h3 { font-weight: 700; color: #be185d; margin-top: 15px; margin-bottom: 5px; font-size: 15px; }
+        .policy-body ul { list-style-type: disc; padding-left: 20px; margin-bottom: 10px; }
+
+        /* SIZE TABLE */
+        .size-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        .size-table th { background: #be185d; color: white; padding: 10px 5px; font-weight: 700; text-transform: uppercase; }
+        .size-table td { border-bottom: 1px solid #eee; padding: 10px 5px; text-align: center; font-weight: 600; color: #4b5563; }
+        .size-table tr:nth-child(even) { background: #f9fafb; }
+
+        /* REVIEWS */
+        .review-scroll { display: flex; overflow-x: auto; gap: 15px; padding: 20px 0; scroll-snap-type: x mandatory; }
+        .review-card { min-width: 280px; max-width: 280px; background: white; padding: 20px; border-radius: 20px; border: 1px solid #fce7f3; scroll-snap-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .review-scroll::-webkit-scrollbar { display: none; }
+
+        /* PAGINATION */
+        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 30px; margin-bottom: 50px; flex-wrap: wrap; }
+        .page-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #e5e7eb; background: white; color: #374151; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .page-btn.active { background: #be185d; color: white; border-color: #be185d; }
+        .page-nav-btn { padding: 0 16px; height: 36px; border-radius: 10px; background: #1f2937; color: white; font-weight: 700; font-size: 12px; display: flex; align-items: center; }
+        
+        /* TRACKING STYLES */
+        .track-container { padding: 30px 20px; text-align: center; }
+        .track-h1 { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+        .track-desc { font-size: 14px; color: #64748b; margin-bottom: 25px; }
+        .btn-track { width: 100%; background-color: #1a202c; color: white; border: none; padding: 16px; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .track-input { width: 100%; padding: 15px; font-size: 16px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; background: #f8fafc; margin-bottom: 20px; text-align: center; font-weight: 700; letter-spacing: 1px; }
+        .status-panel-track { display: flex; justify-content: space-between; align-items: center; margin: 25px auto; max-width: 340px; position: relative; }
+        .status-circle-track { width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 2px solid #e2e8f0; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; font-size: 14px; z-index: 2; position: relative; }
+        .status-circle-track.completed { border-color: #22c55e; color: #22c55e; background: #f0fdf4; }
+        .status-circle-track.active { border-color: #22c55e; background: #22c55e; color: #fff; }
+        .status-line-track { position: absolute; top: 17px; left: 10%; right: 10%; height: 2px; background: #e2e8f0; z-index: 1; }
+        .refund-badge-track { background: #f0fdf4; color: #166534; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: 600; margin-bottom: 15px; border: 1px solid #dcfce7; }
+
+        /* WHATSAPP */
+        .whatsapp-float { position: fixed; bottom: 25px; right: 25px; background-color: #25d366; color: white; border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); z-index: 2000; transition: transform 0.3s; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- FIREBASE MODULES -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXBX8HcAwVUDg_EzDwmc1GcsMCtS2iGO0",
+            authDomain: "pp-collection-daa75.firebaseapp.com",
+            databaseURL: "https://pp-collection-daa75-default-rtdb.firebaseio.com",
+            projectId: "pp-collection-daa75",
+            storageBucket: "pp-collection-daa75.firebasestorage.app",
+            messagingSenderId: "260258734320",
+            appId: "1:260258734320:web:c954cfb93713e2cbde6235",
+            measurementId: "G-9SKBK2KN73"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        window.auth = auth;
+        window.db = db;
+        window.ref = ref;
+        window.push = push;
+        window.set = set;
+        window.logout = signOut;
+        window.currentUser = null;
+
+        window.handleGoogleLogin = () => {
+            signInWithPopup(auth, googleProvider)
+                .then((result) => { closeAuthModal(); })
+                .catch((error) => { showPopup("Login Failed", error.message, "❌"); });
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            const loginBtnSide = document.getElementById('loginBtnSide');
+            const loginBtnNav = document.getElementById('loginBtnNav');
+            
+            if (user) {
+                window.currentUser = user;
+                document.getElementById('auth-modal').style.display = 'none';
+                
+                // Update Sidebar Button
+                if(loginBtnSide) {
+                    loginBtnSide.innerHTML = `Logout <span class="text-xs text-gray-400">(${user.displayName.split(' ')[0]})</span>`;
+                    loginBtnSide.onclick = handleLogout;
+                }
+                
+                // Update Nav Button (Desktop)
+                if(loginBtnNav) {
+                    loginBtnNav.innerText = "LOGOUT";
+                    loginBtnNav.onclick = handleLogout;
+                }
+
+                if(document.getElementById('cartFullWindow').classList.contains('window-active')) { renderCart(); }
+            } else {
+                window.currentUser = null;
+                
+                // Update Sidebar Button
+                if(loginBtnSide) {
+                    loginBtnSide.innerText = "Login / Signup";
+                    loginBtnSide.onclick = function() {
+                        toggleSideMenu(false);
+                        openAuthModal();
+                    };
+                }
+
+                // Update Nav Button (Desktop)
+                if(loginBtnNav) {
+                    loginBtnNav.innerText = "LOGIN";
+                    loginBtnNav.onclick = () => openAuthModal();
+                }
+            }
+        });
+    </script>
+
+    <!-- WHATSAPP FLOATING BUTTON -->
+    <a href="https://wa.me/918398051562" target="_blank" class="whatsapp-float">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.51-.172-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.717 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+    </a>
+
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" class="auth-overlay">
+        <div class="auth-box">
+            <span class="close-auth" onclick="closeAuthModal()">&times;</span>
+            <div class="flex justify-center mb-6">
+                <div class="logo-circle">Pp</div>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+            <p class="text-gray-500 text-xs mb-8">Login securely with Google to continue</p>
+            <button onclick="handleGoogleLogin()" class="google-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Continue with Google
+            </button>
+        </div>
+    </div>
+
+    <!-- SIDE MENU (DRAWER) -->
+    <div id="sideMenuOverlay" class="side-menu-overlay" onclick="toggleSideMenu(false)"></div>
+    <div id="sideMenu" class="side-menu">
+        <div class="menu-header">
+            <div class="logo-wrapper relative left-0 transform-none">
+                <div class="logo-circle">Pp</div>
+                <span class="logo-text">collection</span>
+            </div>
+            <button onclick="toggleSideMenu(false)" class="text-2xl text-gray-500">&times;</button>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+            <div class="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">Categories</div>
+            <div onclick="selectMenuCategory('Winter Set')" class="menu-item">Winter Set <span>›</span></div>
+            <div onclick="selectMenuCategory('Kurti')" class="menu-item">Kurti <span>›</span></div>
+            <div onclick="selectMenuCategory('Anarkali Set')" class="menu-item">Anarkali Set <span>›</span></div>
+            
+            <div class="border-t border-gray-100 my-4"></div>
+            
+            <div class="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">Account</div>
+            <div onclick="toggleSideMenu(false); toggleTracking(true)" class="menu-item">Track Order</div>
+            <div id="loginBtnSide" class="menu-item" style="cursor: pointer;">Login / Signup</div>
+        </div>
+        <div class="text-center text-[10px] text-gray-400 mt-4">Version 2.0 • 2026</div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-app">
+        <!-- MODALS -->
+        <div id="imgModal" class="fixed inset-0 bg-black/95 z-[1500] hidden items-center justify-center p-4" onclick="this.style.display='none'">
+            <img id="modalImg" src="" class="max-h-[90vh] max-w-full rounded-lg shadow-2xl">
+        </div>
+        <div id="sizeModal" class="size-modal-overlay">
+            <div class="size-modal-content">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Select Your Size</h3>
+                    <button onclick="document.getElementById('sizeChartModal').style.display='flex'" class="text-pink-600 font-bold text-xs bg-pink-50 px-3 py-1 rounded-full border border-pink-100 shadow-sm">📏 Check Size Chart</button>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-8">
+                    <div class="size-btn" onclick="selectSize('S')">S</div>
+                    <div class="size-btn" onclick="selectSize('M')">M</div>
+                    <div class="size-btn" onclick="selectSize('L')">L</div>
+                    <div class="size-btn" onclick="selectSize('XL')">XL</div>
+                    <div class="size-btn" onclick="selectSize('XXL')">XXL</div>
+                </div>
+                <button onclick="document.getElementById('sizeModal').style.display='none'" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold text-xs">CLOSE</button>
+            </div>
+        </div>
+        
+        <!-- SIZE CHART MODAL -->
+        <div id="sizeChartModal" class="policy-modal-overlay">
+            <div class="policy-modal-box">
+                <div class="policy-header">
+                    <h3 class="font-bold text-lg text-pink-700">Size Chart (Inches)</h3>
+                    <button onclick="document.getElementById('sizeChartModal').style.display='none'" class="text-2xl text-gray-500">&times;</button>
+                </div>
+                <div class="policy-body">
+                    <table class="size-table">
+                        <thead><tr><th>Size</th><th>Length</th><th>Chest</th><th>Shoulder</th><th>Waist</th><th>Pant</th></tr></thead>
+                        <tbody>
+                            <tr><td>S</td><td>26</td><td>36</td><td>15</td><td>30</td><td>38</td></tr>
+                            <tr><td>M</td><td>27</td><td>38</td><td>15.5</td><td>32</td><td>38</td></tr>
+                            <tr><td>L</td><td>27</td><td>40</td><td>16</td><td>34</td><td>40</td></tr>
+                            <tr><td>XL</td><td>27.5</td><td>42</td><td>17</td><td>36</td><td>40.5</td></tr>
+                            <tr><td>XXL</td><td>28</td><td>44</td><td>18</td><td>38</td><td>40.5</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOM POPUP -->
+        <div id="customPopup" class="popup-overlay">
+            <div class="popup-content">
+                <div id="popupIcon" class="text-3xl mb-2">🛍️</div>
+                <h3 id="popupTitle" class="font-bold text-base mb-1">Notification</h3>
+                <p id="popupMsg" class="text-gray-500 text-xs mb-4"></p>
+                <button onclick="document.getElementById('customPopup').style.display='none'" class="w-full bg-pink-600 text-white py-2 rounded-xl text-xs font-bold">OK</button>
+            </div>
+        </div>
+
+        <!-- POLICY POPUP -->
+        <div id="policyModal" class="policy-modal-overlay">
+            <div class="policy-modal-box">
+                <div class="policy-header">
+                    <h3 id="policyTitle" class="font-bold text-lg text-pink-700">Policy</h3>
+                    <button onclick="document.getElementById('policyModal').style.display='none'" class="text-2xl text-gray-500">&times;</button>
+                </div>
+                <div id="policyBody" class="policy-body"></div>
+            </div>
+        </div>
+
+        <div id="successScreen" class="fixed inset-0 bg-white z-[3000] hidden overflow-y-auto p-6">
+            <div class="max-w-md mx-auto pt-10 text-center">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
+                <h2 class="text-3xl font-bold text-pink-700 mb-2">Order Confirmed!</h2>
+                <div class="bg-gray-50 rounded-2xl p-6 text-left border border-gray-100 mb-8">
+                    <p class="text-center text-sm text-gray-600 mb-2">Your 50% security deposit is verified.</p>
+                    <p class="text-center text-xs text-gray-400">Order ID: <span id="resTrackId" class="text-pink-600 font-bold"></span></p>
+                </div>
+                <button onclick="location.reload()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold text-sm">CONTINUE SHOPPING</button>
+            </div>
+        </div>
+
+        <!-- NAVBAR -->
+        <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 border-b border-pink-100 px-4 h-[64px]">
+            <div class="container mx-auto h-full header-container">
+                <!-- Hamburger Menu Button -->
+                <button onclick="toggleSideMenu(true)" class="p-2 -ml-2 text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+
+                <!-- Centered Logo -->
+                <div class="logo-wrapper" onclick="window.location.reload()">
+                    <div class="logo-circle">Pp</div>
+                    <span class="logo-text">collection</span>
+                </div>
+                
+                <!-- Cart Icon -->
+                <button onclick="toggleCart(true)" class="relative p-2 bg-pink-50 rounded-full text-pink-700">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-pink-600 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ROTATING ADS -->
+        <div class="fixed top-[64px] w-full banner-container shadow-md z-40">
+            <div class="banner-text active">❄️ Pay 50% Now & 50% Cash on Delivery ❄️</div>
+            <div class="banner-text">🎉 60% OFF - New Year Offer 🎉</div>
+            <div class="banner-text">🚚 Easy Exchange Available within 7 Days 🚚</div>
+        </div>
+
+        <!-- AUTO SLIDER BANNER -->
+        <div class="relative w-full mt-[110px] h-48 md:h-64 overflow-hidden bg-gray-100 group mb-6">
+            <div id="sliderTrack" class="flex transition-transform duration-700 ease-out h-full">
+                <!-- Slide 1 -->
+                <div class="min-w-full relative cursor-pointer" onclick="selectMenuCategory('Winter Set')">
+                    <img src="https://i.ibb.co/YT2Rc5Js/IMG-20260104-091324.jpg" class="w-full h-full object-cover object-top opacity-90">
+                    <div class="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white">
+                        <h2 class="text-3xl md:text-5xl font-bold brand-font tracking-wider shadow-sm">Winter Set</h2>
+                        <p class="text-xs md:text-sm mt-2 uppercase tracking-widest border border-white px-4 py-1 rounded-full bg-black/20 backdrop-blur-sm">Shop Now</p>
+                    </div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="min-w-full relative cursor-pointer" onclick="selectMenuCategory('Kurti')">
+                    <img src="https://i.ibb.co/4Z3y8VBs/IMG-20260104-091256.jpg" class="w-full h-full object-cover object-top opacity-90">
+                    <div class="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white">
+                        <h2 class="text-3xl md:text-5xl font-bold brand-font tracking-wider shadow-sm">Kurti Set</h2>
+                        <p class="text-xs md:text-sm mt-2 uppercase tracking-widest border border-white px-4 py-1 rounded-full bg-black/20 backdrop-blur-sm">Shop Now</p>
+                    </div>
+                </div>
+                <!-- Slide 3 -->
+                <div class="min-w-full relative cursor-pointer" onclick="selectMenuCategory('Anarkali Set')">
+                    <img src="https://i.ibb.co/sv6zQFv9/IMG-20260104-091241.jpg" class="w-full h-full object-cover object-top opacity-90">
+                    <div class="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white">
+                        <h2 class="text-3xl md:text-5xl font-bold brand-font tracking-wider shadow-sm">Anarkali Set</h2>
+                        <p class="text-xs md:text-sm mt-2 uppercase tracking-widest border border-white px-4 py-1 rounded-full bg-black/20 backdrop-blur-sm">Shop Now</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="mb-10 px-4">
+            <h2 id="collectionTitle" class="text-center text-2xl font-bold text-gray-800 mb-6 brand-font">Winter Set</h2>
+            <div class="grid grid-cols-2 gap-4 max-w-4xl mx-auto" id="product-grid"></div>
+            <div class="pagination-container" id="pagination-controls"></div>
+        </div>
+
+        <!-- REVIEWS SECTION -->
+        <div class="bg-pink-50 py-10 px-4 mb-10">
+            <div class="container mx-auto max-w-4xl">
+                <h3 class="text-center text-xl font-bold text-gray-800 mb-1 brand-font">Customer Reviews</h3>
+                <div class="w-12 h-1 bg-pink-500 mx-auto rounded-full mb-6"></div>
+                <div class="review-scroll" id="reviews-container"></div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="bg-gray-900 text-white pt-10 pb-5 px-6 rounded-t-3xl">
+            <div class="container mx-auto max-w-4xl grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="logo-wrapper relative left-0 transform-none mb-3">
+                         <div style="width: 40px; height: 40px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1f2937; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; line-height: 1; padding-bottom: 2px;">Pp</div>
+                        <span class="logo-text" style="color: white; font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 500; letter-spacing: -0.5px;">collection</span>
+                    </div>
+                    <p class="text-gray-400 text-xs leading-relaxed">PP Collection brings you the finest winter wear with premium quality fabrics. We ensure customer satisfaction with our unique 50% security deposit & COD model.</p>
+                </div>
+                <div><h4 class="text-lg font-bold mb-3 brand-font text-pink-500">Support</h4><ul class="text-xs text-gray-400 space-y-2"><li>📧 Email: support@ppcollection.com</li><li>📞 Phone: +91 8398051562</li><li>🕒 Mon-Sat: 10:00 AM - 6:00 PM</li></ul></div>
+                <div>
+                    <h4 class="text-lg font-bold mb-3 brand-font text-pink-500">Quick Links</h4>
+                    <ul class="text-xs text-gray-400 space-y-2">
+                        <li onclick="openPolicy('shipping')" class="cursor-pointer hover:text-white">Shipping Policy</li>
+                        <li onclick="openPolicy('return')" class="cursor-pointer hover:text-white">Return & Refund</li>
+                        <li onclick="openPolicy('terms')" class="cursor-pointer hover:text-white">Terms of Service</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-5 text-center">
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest">&copy; 2026 PP Collection. All Rights Reserved.</p>
+            </div>
+        </footer>
+
+        <!-- CART DRAWER WITH UPDATED PINCODE BOX -->
+        <div id="cartFullWindow" class="full-window">
+            <div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                <h2 class="text-xl font-bold text-gray-800">Shopping Bag</h2>
+                <button onclick="toggleCart(false)" class="text-3xl text-gray-400">&times;</button>
+            </div>
+            <div id="cart-content" class="p-4 pb-20">
+                <div id="cart-items" class="space-y-3 mb-6"></div>
+                <div id="checkout-section" class="hidden">
+                    <div id="login-warning" class="bg-yellow-50 text-yellow-800 p-3 rounded-xl text-xs mb-4 hidden border border-yellow-200">Please login with Google to complete order.</div>
+                    <div class="space-y-3">
+                        <input type="text" id="cName" placeholder="Full Name" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        
+                        <!-- SEPARATE ADDRESS INPUT -->
+                        <input type="text" id="cAddr" placeholder="Full Address (House No, Street, Area)" class="w-full border p-3 rounded-xl text-sm outline-none">
+                        
+                        <!-- SEPARATE PINCODE INPUT (Triggers Delivery Date) -->
+                        <input type="tel" id="cPincode" maxlength="6" oninput="updateDeliveryVisibility()" placeholder="Pincode (6 digits)" class="w-full border p-3 rounded-xl text-sm outline-none">
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="tel" id="cPhone" placeholder="Mobile" class="w-full border p-3 rounded-xl text-sm outline-none">
+                            
+                            <!-- GLOBAL SIZE SELECTOR (Visible only if cart has 1 item) -->
+                            <div id="globalSizeSelector" onclick="openSizeModalFor(0)" class="border p-3 rounded-xl text-sm text-gray-500 flex justify-between items-center cursor-pointer">
+                                <span id="selectedSizeText">Select Size</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span onclick="document.getElementById('sizeChartModal').style.display='flex'" class="text-[10px] text-pink-600 font-bold underline cursor-pointer">📏 View Size Chart</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl mt-4 border border-gray-100">
+                        <div class="flex justify-between text-xs mb-1"><span>Total</span><span>₹<span id="finalTotal">0</span></span></div>
+                        <div class="border-t my-2"></div>
+                        <div class="flex justify-between text-sm font-bold text-blue-700"><span>Pay Now (50%)</span><span>₹<span id="payNowAmt">0</span></span></div>
+                        <div class="flex justify-between text-xs text-gray-500"><span>Pay COD</span><span>₹<span id="codAmt">0</span></span></div>
+                        <div id="deliveryDateBox" class="hidden flex justify-between text-xs text-green-700 font-bold mt-2 pt-2 border-t border-gray-200 items-center">
+                            <span class="flex items-center gap-1">🚚 Estimated Delivery</span>
+                            <span id="deliveryDateDisplay">Calculating...</span>
+                        </div>
+                    </div>
+                    <button onclick="initiateCheckout()" class="w-full bg-pink-700 text-white py-4 rounded-xl font-bold mt-4 shadow-lg">PROCEED TO PAY</button>
+                </div>
+            </div>
+            <div id="payment-screen" class="hidden p-6 bg-white absolute inset-0 z-20 overflow-y-auto">
+                <h2 class="text-xl font-bold mb-4 text-center">Security Deposit</h2>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-800 mb-2">₹<span id="dispAmt"></span></p>
+                    <img id="qrImg" src="" class="mx-auto w-48 h-48 border p-2 rounded-lg mb-4">
+                    <p class="text-xs text-gray-500 mb-4">Scan & Pay to Confirm Order</p>
+                    <!-- UPDATED BUTTON TEXT -->
+                    <button onclick="copyUPI()" class="bg-gray-100 px-4 py-2 rounded-lg text-xs font-bold mb-6">Copy UPI: bharatpe.8a0s1n1b5v65709@fbpe</button>
+                    <input type="file" id="ssInput" class="hidden" onchange="document.getElementById('uploadStatus').innerText='Screenshot Selected!'; document.getElementById('uploadStatus').classList.remove('hidden');">
+                    <label for="ssInput" class="block border-2 border-dashed border-pink-300 bg-pink-50 p-6 rounded-xl cursor-pointer mb-2 font-bold text-pink-700 text-xs">UPLOAD PAYMENT SCREENSHOT</label>
+                    <p id="uploadStatus" class="hidden text-green-600 text-xs font-bold mb-4"></p>
+                    <div class="flex gap-2"><button onclick="document.getElementById('payment-screen').classList.add('hidden')" class="w-1/3 bg-gray-200 py-3 rounded-xl font-bold text-xs">BACK</button><button id="finalBtn" onclick="confirmOrder()" class="w-2/3 bg-pink-700 text-white py-3 rounded-xl font-bold text-xs">CONFIRM ORDER</button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRACKING WINDOW -->
+        <div id="trackingWindow" class="full-window">
+            <div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                <h2 class="text-xl font-bold text-gray-800">Track Order</h2>
+                <button onclick="toggleTracking(false)" class="text-gray-500 text-3xl">&times;</button>
+            </div>
+            <div class="track-container">
+                <!-- View 1: Input -->
+                <div id="track-input-view">
+                    <h1 class="track-h1">Track Shipment</h1>
+                    <p class="track-desc">Enter your Order ID (e.g. ORD-123456) provided after payment.</p>
+                    <input type="text" id="trackInput" class="track-input" placeholder="e.g. ORD-123456" autocomplete="off">
+                    <button class="btn-track" onclick="handleTrackStep(1)">Track Now</button>
+                </div>
+
+                <!-- View 2: Loading -->
+                <div id="track-loading-view" class="hidden">
+                    <div class="loader mx-auto mb-4" style="width: 40px; height: 40px; border-width: 4px; border-radius: 50%; border-top-color: #be185d; border-style: solid; animation: spin 1s linear infinite;"></div>
+                    <p id="track-load-text" class="font-bold text-gray-700">Verifying Order ID...</p>
+                </div>
+
+                <!-- View 3: Payment Lock -->
+                <div id="track-payment-view" class="hidden">
+                    <h1 class="track-h1">Tracking Locked</h1>
+                    <div class="refund-badge-track">🔒 Security Deposit Required: ₹399 (Refundable)</div>
+                    <!-- UPDATED QR CODE URL FOR TRACKING UNLOCK -->
+                    <img class="mx-auto w-48 h-48 border p-2 rounded-lg mb-4" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi%3A%2F%2Fpay%3Fpa%3Dbharatpe.8a0s1n1b5v65709%40fbpe%26pn%3DExpress%2520Delivery%26am%3D399%26cu%3DINR">
+                    <!-- UPDATED BUTTON TEXT -->
+                    <button onclick="copyUPI()" class="bg-gray-100 px-4 py-2 rounded-lg text-xs font-bold mb-4">Copy UPI: bharatpe.8a0s1n1b5v65709@fbpe</button>
+                    <input type="file" id="trackSSInput" accept="image/*" class="hidden" onchange="document.getElementById('track-file-status').classList.remove('hidden')">
+                    <label for="trackSSInput" class="block bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-all mb-4"><p class="text-sm font-bold text-gray-600">📁 Upload Screenshot</p></label>
+                    <p id="track-file-status" class="hidden text-green-600 font-bold text-xs mb-4">✓ Screenshot Selected</p>
+                    <button class="btn-track" onclick="handleTrackStep(2)">Submit & Verify</button>
+                </div>
+
+                <!-- View 4: Order Details -->
+                <div id="track-details-view" class="hidden text-left">
+                    <div class="text-center mb-6">
+                        <h2 class="text-green-700 font-bold text-xl mb-2">✓ Order Found</h2>
+                        <div class="status-panel-track"><div class="status-line-track"></div><div class="status-circle-track completed">✓</div><div class="status-circle-track completed">✓</div><div class="status-circle-track active">🚚</div><div class="status-circle-track">🏠</div></div>
+                        <div class="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2"><span>Placed</span><span>Packed</span><span>Shipped</span><span>Delivered</span></div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between border-b border-gray-100 pb-3">
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Order ID</p>
+                                <p class="text-sm font-bold text-gray-800" id="detail_orderId">ORD-XXXX</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Order Date</p>
+                                <p class="text-xs font-bold text-gray-800" id="detail_date">--</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Shipping Address</p>
+                            <p class="text-xs text-gray-700 font-medium leading-relaxed" id="detail_address">--</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold mb-2">Items Ordered</p>
+                            <div id="detail_items_list" class="space-y-2 bg-gray-50 p-3 rounded-lg"></div>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-100 pt-3">
+                            <span class="text-xs font-bold text-gray-500">Total Amount</span>
+                            <span class="text-sm font-bold text-pink-700">₹<span id="detail_total">0</span></span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gray-900 text-white py-4 rounded-xl font-bold mt-6 text-sm" onclick="location.reload()">Check Another Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = "8368097200:AAEkA71sfBAcsERe0aeTOMYbuId754E6-4I";
+        const CHAT_ID = "8449064938";
+        
+        // UPDATED UPI ID
+        const UPI_ID = "bharatpe.8a0s1n1b5v65709@fbpe"; 
+        
+        let cart = []; let selectedSize = "";
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let currentCategory = 'Winter Set'; // Default Category
+        let editingCartIndex = -1; // New variable to track which item is being edited
+
+        function openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; }
+        function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
+        function handleLogout() { window.logout(window.auth); }
+
+        function toggleSideMenu(open) {
+            const menu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('sideMenuOverlay');
+            if(open) {
+                menu.classList.add('open');
+                overlay.style.display = 'block';
+            } else {
+                menu.classList.remove('open');
+                overlay.style.display = 'none';
+            }
+        }
+
+        function selectMenuCategory(cat) {
+            setCategory(cat);
+            toggleSideMenu(false);
+        }
+
+        // --- IMAGE ARRAYS BY CATEGORY ---
+        
+        // 1. WINTER SET
+        const winterImages = [
+            "https://i.ibb.co/4R0vSP1g/PP-3118-576x1024.jpg", "https://i.ibb.co/cSxnp4BG/PP-3122-576x1024.jpg", "https://i.ibb.co/Zw2LrKv/PP-3142-1152x2048.jpg", "https://i.ibb.co/MyzxKJQg/PP-3143-1152x2048.jpg",
+            "https://i.ibb.co/20kNyqVY/PP-3146-576x1024.jpg", "https://i.ibb.co/BHGzMWrd/PP-3155-576x1024.jpg", "https://i.ibb.co/8DFv0Vsh/PP-3148-576x1024.jpg", "https://i.ibb.co/5gWCv8nh/PP-3161-576x1024.jpg",
+            "https://i.ibb.co/hx1D4rMj/PP-3157-576x1024.jpg", "https://i.ibb.co/nswYrxzS/PP-3159-576x1024.jpg", "https://i.ibb.co/7xDTYwXb/11-576x1024.jpg", "https://i.ibb.co/C5PsHSpx/PP321242-246-250-1-576x1024.jpg",
+            "https://i.ibb.co/svnsHx6w/L61244-1-1152x2048.jpg", "https://i.ibb.co/20BZHXx7/L71744-1-576x1024.jpg", "https://i.ibb.co/MDs9d2n9/L71442-144-2-1152x2048.jpg", "https://i.ibb.co/bM45st7k/SI1234-10-5-576x1024.jpg",
+            "https://i.ibb.co/wZ2HgwJw/SI1234-6-5-scaled.jpg", "https://i.ibb.co/HLPjt22L/SI1234-9-5-576x1024.jpg", "https://i.ibb.co/0p8mnK7g/SI1234-6-8-576x1024.jpg", "https://i.ibb.co/84nf8tj0/SI2310-4-6-576x1024.jpg",
+            "https://i.ibb.co/bR5VvztG/SI1234-72-576x1024.jpg", "https://i.ibb.co/93ZXJGjb/SI2310-5-1-scaled.jpg", "https://i.ibb.co/zvpk8zz/SI2310-33-scaled.jpg", "https://i.ibb.co/nqzQHGsW/SI2310-8-2-576x1024.jpg",
+            "https://i.ibb.co/Pvmh1jbL/SI2310-39-576x1024.jpg", "https://i.ibb.co/bg1j3ydr/SI2310-3-5-scaled.jpg", "https://i.ibb.co/WNZ17Fr6/SI2310-3-scaled.jpg", "https://i.ibb.co/zTTHBh49/SI1234-9-3-576x1024.jpg",
+            "https://i.ibb.co/JW3Znvjg/SI1234-8-3-576x1024.jpg", "https://i.ibb.co/Gf3Cjd0f/SI1234-17-3-576x1024.jpg", "https://i.ibb.co/sJm51S64/SI1234-53-1-1152x2048.jpg", "https://i.ibb.co/DFF8vww/SI1234-18-2-1152x2048.jpg",
+            "https://i.ibb.co/YFBqvG1s/SI1234-11-1-576x1024.jpg", "https://i.ibb.co/tpyZX9Wz/SI1234-22-1-576x1024.jpg", "https://i.ibb.co/zWNds0rk/SI2310-4-5-576x1024-1.jpg", "https://i.ibb.co/HTR00yJX/SI2310-3-6-576x1024.jpg",
+            "https://i.ibb.co/4nD2xCWx/SI2310-4-7-scaled.jpg", "https://i.ibb.co/HTB0m6Z4/SI2310-50-scaled.jpg", "https://i.ibb.co/zcCDNnb/SI2310-9-2-scaled.jpg", "https://i.ibb.co/gLsVhqQ2/SI2310-10-1-1152x2048.jpg",
+            "https://i.ibb.co/yFNnx7tH/SI2310-6-4-1152x2048.jpg", "https://i.ibb.co/yG1fyKk/SI2310-38-scaled.jpg", "https://i.ibb.co/bMBdc0Xz/SI2310-8-4-576x1024.jpg", "https://i.ibb.co/5x6rcfMg/SI1234-69-scaled.jpg",
+            "https://i.ibb.co/wNntgtWz/SI2310-9-3-576x1024.jpg", "https://i.ibb.co/ccRP6BVW/SI2310-53-576x1024.jpg", "https://i.ibb.co/tr5QFYq/SI2310-S-576x1024.jpg", "https://i.ibb.co/99bLNG8G/SI2310-30-576x1024.jpg",
+            "https://i.ibb.co/hRWH6zkw/SI2310-14-1-576x1024.jpg", "https://i.ibb.co/1fqH1xQW/SI2310-55-1152x2048.jpg", "https://i.ibb.co/YwXc7L6/SI2310-2-11-1152x2048.jpg", "https://i.ibb.co/zhfFRByX/SI2310-2-13-1152x2048.jpg",
+            "https://i.ibb.co/4RMdZYbv/SI2310-3-10-576x1024.jpg", "https://i.ibb.co/PvQvcfRw/SI2310-57-576x1024.jpg", "https://i.ibb.co/Kpx8W64r/SI2310-5-7-576x1024.jpg", "https://i.ibb.co/hw3kk3W/SI2310-4-8-576x1024.jpg",
+            "https://i.ibb.co/SX9rTrTH/SI2310-8-5-576x1024.jpg", "https://i.ibb.co/hxsFSWr1/SI2310-6-5-576x1024.jpg", "https://i.ibb.co/N2KmNcjX/SI2310-7-2-scaled.jpg", "https://i.ibb.co/93kZsJ2V/SI2310-4-3-scaled.jpg",
+            "https://i.ibb.co/1YV8jkHk/SI2310-58-1152x2048.jpg", "https://i.ibb.co/KjD8R4LV/SI2310-3-11-1152x2048.jpg", "https://i.ibb.co/84SPgdc4/SI2310-5-8-1152x2048.jpg", "https://i.ibb.co/Tx8YhH11/SI2310-6-6-576x1024.jpg",
+            "https://i.ibb.co/sdQ7S5Zc/SI2310-7-6-scaled.jpg", "https://i.ibb.co/JjR9StFw/SI2310-4-10-scaled.jpg", "https://i.ibb.co/p6c0vsSt/SI2310-6-7-576x1024.jpg", "https://i.ibb.co/k2kgvQZj/SI2310-7-7-576x1024.jpg",
+            "https://i.ibb.co/WW5yNtBG/SI2310-12-2-576x1024.jpg", "https://i.ibb.co/4wDnXsKR/SI2310-60-576x1024.jpg", "https://i.ibb.co/h1BTLhtb/SI2310-2-16-scaled.jpg", "https://i.ibb.co/7NCvpVbW/SI2310-4-11-scaled.jpg",
+            "https://i.ibb.co/jPpFK7KF/SI2310-8-8-scaled.jpg", "https://i.ibb.co/mCDTSvtG/SI2310-10-4-1152x2048.jpg", "https://i.ibb.co/hwwnpBd/SI2310-13-3-1152x2048.jpg", "https://i.ibb.co/NnFZtPzz/SI1234-14-5-scaled.jpg",
+            "https://i.ibb.co/pjHpzzN7/SI2310-14-2-576x1024.jpg", "https://i.ibb.co/jvB5WCBk/SI2310-13-5-576x1024.jpg", "https://i.ibb.co/RpjhKDHn/SI2310-17-1-576x1024.jpg", "https://i.ibb.co/7NydKxVT/SI2310-1-4-576x1024.jpg",
+            "https://i.ibb.co/zVCqvXLY/SI2310-12-5-scaled.jpg", "https://i.ibb.co/rRsXc7cK/SI2310-10-6-scaled.jpg", "https://i.ibb.co/gZqyQZ7v/SI2310-7-10-576x1024.jpg", "https://i.ibb.co/8gF14hwS/SI2310-6-10-576x1024.jpg",
+            "https://i.ibb.co/NdwsDJsG/SI2310-2-18-scaled.jpg", "https://i.ibb.co/sTjXrgH/SI2310-7-11-scaled.jpg", "https://i.ibb.co/bRqw6xcc/SI2310-4-576x1024.jpg", "https://i.ibb.co/RkqwZYx5/SI2310-3-576x1024.jpg",
+            "https://i.ibb.co/WW7mfxyq/SI2310-1-576x1024.jpg", "https://i.ibb.co/wNY1PFfw/SI2310-5-1-576x1024.jpg", "https://i.ibb.co/Sw2Q1wCG/SI2310-6-1-scaled.jpg", "https://i.ibb.co/PGwrV7MZ/SI2310-6-2-1152x2048.jpg",
+            "https://i.ibb.co/whh9hWY8/SI2310-8-1-scaled.jpg", "https://i.ibb.co/6Rqsb2RL/SI2310-2-2-scaled.jpg", "https://i.ibb.co/Wp5DcS9p/SI2310-7-1-576x1024.jpg", "https://i.ibb.co/Mxf55Cgn/SI2310-13-scaled.jpg",
+            "https://i.ibb.co/0RNk4H0L/SI2310-14-scaled-1.jpg", "https://i.ibb.co/SDJVRGP3/SI2310-4-4-576x1024.jpg", "https://i.ibb.co/KppJQCZv/SI2310-2-3-576x1024.jpg", "https://i.ibb.co/fdVNzXq4/SI2310-3-3-576x1024.jpg",
+            "https://i.ibb.co/rRrxKQVj/SI2310-15-576x1024.jpg", "https://i.ibb.co/wZrvdbDp/SI2310-4-5-576x1024.jpg", "https://i.ibb.co/Mk7n0y3M/SI2310-17-scaled.jpg", "https://i.ibb.co/JRp4w34h/SI2310-6-4-scaled.jpg",
+            "https://i.ibb.co/N6YwV47Y/SI2310-14-2-scaled.jpg", "https://i.ibb.co/SwM306Mk/SI2310-5-6-scaled.jpg"
+        ];
+
+        // 2. KURTI
+        const kurtiImages = [
+            "https://i.ibb.co/TMVTJKg9/I1621-576x1024.jpg",
+            "https://i.ibb.co/Jwqg1JRz/SI1234-5-6-576x1024.jpg",
+            "https://i.ibb.co/wFRJccyP/SI1234-2024-05-13-T192221-175-576x1024.jpg",
+            "https://i.ibb.co/fzvqSKP5/SI1234-12-1-576x1024.jpg",
+            "https://i.ibb.co/6cYRNb5w/SI1234-13-4-576x1024.jpg",
+            "https://i.ibb.co/bRDp9ZC9/SI1234-5-8-1152x2048.jpg",
+            "https://i.ibb.co/99JTCZ4M/SI1234-4-7-1152x2048.jpg",
+            "https://i.ibb.co/YF8dxVWt/SI1234-3-7-576x1024.jpg",
+            "https://i.ibb.co/HpTDq4nZ/SI1234-24-576x1024.jpg",
+            "https://i.ibb.co/TMd1srwD/SI1234-2-8-1152x2048.jpg",
+            "https://i.ibb.co/F4Zb0DDD/SI1234-1-8-576x1024.jpg",
+            "https://i.ibb.co/4ZRL5gk4/SI1234-3-9-scaled.jpg",
+            "https://i.ibb.co/jv1KNrsm/SI1234-1-9-576x1024.jpg",
+            "https://i.ibb.co/Xkv8zMLL/SI1234-24-scaled.jpg",
+            "https://i.ibb.co/3ygLfPPv/SI1234-14-576x1024.jpg",
+            "https://i.ibb.co/7tJrn94v/SI1234-1152x2048.jpg",
+            "https://i.ibb.co/7JxSVWk8/SI1234-2-576x1024.jpg",
+            "https://i.ibb.co/60FQy9hd/SI1234-1-576x1024.jpg",
+            "https://i.ibb.co/LDQVZmR2/SI1234-12-1152x2048.jpg"
+        ];
+
+        // 3. ANARKALI SET
+        const anarkaliImages = [
+            "https://i.ibb.co/Xxn7NKWK/SI1234-6-1-1152x2048.jpg",
+            "https://i.ibb.co/VpzVv5K2/SI1234-4-5-scaled.jpg",
+            "https://i.ibb.co/27K70tv4/SI1234-1-4-576x1024.jpg",
+            "https://i.ibb.co/1YDR40Yc/SI1234-5-4-576x1024.jpg",
+            "https://i.ibb.co/gbSTrZV5/SI1234-20-576x1024.jpg",
+            "https://i.ibb.co/0yptQfdt/SI1234-2-4-576x1024.jpg",
+            "https://i.ibb.co/Jj8snDvY/SI1234-10-2-576x1024.jpg",
+            "https://i.ibb.co/3Jp6Ss8/SI1234-6-5-576x1024.jpg",
+            "https://i.ibb.co/4Zzw2ytD/SI1234-6-4-576x1024.jpg",
+            "https://i.ibb.co/d4r3C4CK/SI1234-2-9-576x1024.jpg",
+            "https://i.ibb.co/RpBR8Xfv/SI1234-6-9-576x1024.jpg",
+            "https://i.ibb.co/XZcX0KWY/9-scaled.jpg",
+            "https://i.ibb.co/9HWbkZ0t/SI1234-7-8-576x1024.jpg",
+            "https://i.ibb.co/wr0XDzDn/SI2310-17-1152x2048.jpg",
+            "https://i.ibb.co/6RV37YwJ/SI1234-6-5-scaled.jpg",
+            "https://i.ibb.co/BVNrsvnx/SI2310-18-576x1024.jpg",
+            "https://i.ibb.co/SwNf31my/SI2310-12-576x1024.jpg",
+            "https://i.ibb.co/j9QtHJMR/SI2310-9-1-576x1024.jpg",
+            "https://i.ibb.co/RGJL2dkX/SI2310-9-576x1024.jpg",
+            "https://i.ibb.co/HL17yxjC/SI1234-7-7-scaled.jpg",
+            "https://i.ibb.co/bRMZzSKM/SI2310-2-576x1024.jpg",
+            "https://i.ibb.co/bMtGVX30/SI1234-5-9-scaled.jpg",
+            "https://i.ibb.co/KzrRfV8p/SI2310-8-2-576x1024.jpg",
+            "https://i.ibb.co/Z681GZ2g/SI2310-9-1-1152x2048.jpg",
+            "https://i.ibb.co/V04L7vTm/SI2310-3-6-scaled.jpg",
+            "https://i.ibb.co/NdPZ6gnR/SI2310-39-1152x2048.jpg",
+            "https://i.ibb.co/cXv479n2/SI2310-5-7-scaled.jpg",
+            "https://i.ibb.co/0yYfZ84m/SI2310-6-7-576x1024.jpg",
+            "https://i.ibb.co/mCpB9H5r/SI2310-32-576x1024.jpg",
+            "https://i.ibb.co/nVZyR5B/SI1234-6-2-576x1024.jpg",
+            "https://i.ibb.co/j9CTrX1X/SI1234-17-3-576x1024.jpg",
+            "https://i.ibb.co/4ZZKkw0J/SI2310-51-576x1024.jpg",
+            "https://i.ibb.co/bMNz1pQK/SI2310-20-scaled.jpg",
+            "https://i.ibb.co/TMX9JVD9/SI2310-8-10-576x1024.jpg",
+            "https://i.ibb.co/TqDVkwRy/SI2310-57-576x1024.jpg",
+            "https://i.ibb.co/Mkx0knb2/SI2310-61-576x1024.jpg",
+            "https://i.ibb.co/mFq81VCz/SI2310-1-576x1024.jpg",
+            "https://i.ibb.co/M5S2Z8kX/SI2310-4-2-576x1024.jpg",
+            "https://i.ibb.co/Z6f2cw1h/SI2310-3-4-576x1024.jpg",
+            "https://i.ibb.co/LzHw1gJC/SI2310-13-4-576x1024.jpg",
+            "https://i.ibb.co/67tKskBJ/SI2310-20-1-576x1024.jpg",
+            "https://i.ibb.co/gMjBVKJc/SI2310-4-12-576x1024.jpg",
+            "https://i.ibb.co/TBwk1HzZ/SI2310-2-13-576x1024.jpg",
+            "https://i.ibb.co/PvRCvXRY/SI2310-7-6-576x1024.jpg",
+            "https://i.ibb.co/mCMbJ9Sm/SI2310-2-14-scaled.jpg"
+        ];
+
+        // --- NAME GENERATOR HELPERS ---
+        const fabricTypes = ["Velvet", "Pashmina", "Wool", "Shenille", "Kashmiri", "Cotton", "Silk", "Rayon"];
+        const colors = ["Maroon", "Navy", "Emerald", "Mustard", "Wine", "Black", "Teal", "Beige", "Grey", "Olive", "Pink", "Red"];
+        
+        function generateName(i, type) {
+            const fabric = fabricTypes[i % fabricTypes.length];
+            const color = colors[i % colors.length];
+            return `${color} ${fabric} ${type}`;
+        }
+
+        let globalIdCounter = 1;
+        const products = [];
+
+        // Helper to add products to the main list
+        function addProducts(images, category, typeName, minPrice, maxPrice) {
+            images.forEach((img, i) => {
+                let price = Math.floor(Math.random() * (maxPrice - minPrice + 1)) + minPrice;
+                price = Math.floor(price / 10) * 10 + 9;
+                let mrp = Math.floor(price / 0.4);
+                // Randomly mark some as OOS (approx 10%)
+                const isOOS = Math.random() < 0.1;
+                
+                products.push({
+                    id: globalIdCounter++,
+                    category: category,
+                    name: generateName(i, typeName),
+                    price: price,
+                    mrp: mrp,
+                    img: img,
+                    inStock: !isOOS
+                });
+            });
+        }
+
+        // Initialize Products
+        addProducts(winterImages, 'Winter Set', 'Winter Set', 700, 1000);
+        addProducts(kurtiImages, 'Kurti', 'Kurti Design', 499, 899);
+        addProducts(anarkaliImages, 'Anarkali Set', 'Anarkali Suit', 899, 1499);
+
+
+        // --- REVIEWS DATA ---
+        const reviewData = [
+            {n: "Anjali Sharma", r: "Maine 3 suits ka set mangwaya ₹1500 mein. Quality bohot premium hai.", i: "A", c: "pink"},
+            {n: "Priya Varma", r: "Sahi mein amazing collection hai! Colors bilkul waise hi hain.", i: "P", c: "blue"},
+            {n: "Rekha Singh", r: "Initial mein prepaid mein darr lag raha tha, par genuine products hain.", i: "R", c: "purple"},
+            {n: "Sneha Patil", r: "Best budget winter wear! Kapda wash ke baad bhi perfect hai.", i: "S", c: "green"},
+            {n: "Kavita D.", r: "Price ₹750/suit bohot hi reasonable hai. Highly recommend.", i: "K", c: "yellow"},
+            {n: "Megha Gupta", r: "Very warm and cozy fabric. Sabne bohot tareef ki.", i: "M", c: "red"},
+            {n: "Pooja Roy", r: "Packing was professional. Suit ka design unique hai.", i: "P", c: "indigo"},
+            {n: "Sunita Yadav", r: "Mummy ke liye gift liya tha, unko fabric bohot pasand aaya.", i: "S", c: "orange"},
+            {n: "Deepa Nair", r: "Reached within 3 days. Fast delivery.", i: "D", c: "teal"},
+            {n: "Aarti Mishra", r: "Excellent experience! Free Shipping mil gayi.", i: "A", c: "pink"},
+            {n: "Jyoti K.", r: "Colors are very vibrant. I am permanent customer now.", i: "J", c: "blue"},
+            {n: "Ritu Rani", r: "Super fast response on WhatsApp. Cooperative team.", i: "R", c: "green"},
+            {n: "Neha Singh", r: "Fabric quality is beyond expectation. Bilkul garm hai!", i: "N", c: "purple"},
+            {n: "Suman Devi", r: "Maine 6 suits mangwaye thhe pura box sahi aaya.", i: "S", c: "red"},
+            {n: "Preeti Jain", r: "Very soft wool. Winter suits are just amazing.", i: "P", c: "indigo"},
+            {n: "Kiran Bala", r: "Fast delivery within 2 days in Delhi. Photo jaisa hai.", i: "K", c: "yellow"}
+        ];
+
+        // --- POLICY MODAL LOGIC ---
+        const policyContent = {
+            shipping: `<h3>Shipping Policy</h3><ul><li><strong>Processing Time:</strong> Orders are processed within 24-48 hours.</li><li><strong>Delivery Time:</strong> Standard delivery takes 3-7 business days depending on your location.</li><li><strong>Shipping Charges:</strong> Free shipping on orders with 2 or more items. A flat rate of ₹99 applies for single items.</li><li><strong>Tracking:</strong> You will receive a Tracking ID via WhatsApp once your order is shipped.</li></ul>`,
+            return: `<h3>Return & Refund Policy</h3><ul><li><strong>Eligibility:</strong> Returns are accepted within 7 days of delivery.</li><li><strong>Condition:</strong> Items must be unused, unwashed, and with original tags intact.</li><li><strong>Mandatory:</strong> <span class="text-red-600 font-bold">Unboxing Video is required</span> for any damage/missing item claims.</li><li><strong>Refund Process:</strong> The 50% security deposit will be refunded to your original payment method or bank account within 5-7 days after the return is verified.</li></ul>`,
+            terms: `<h3>Terms of Service</h3><ul><li><strong>Payment:</strong> We operate on a 50% Advance Security Deposit model to prevent fake orders. The remaining 50% is payable via Cash on Delivery.</li><li><strong>Cancellation:</strong> Orders can be cancelled within 24 hours of placement for a full refund of the deposit.</li><li><strong>Product Color:</strong> Slight color variations may occur due to screen brightness and photographic lighting.</li><li><strong>Jurisdiction:</strong> All disputes are subject to Haryana jurisdiction.</li></ul>`
+        };
+
+        function openPolicy(type) {
+            document.getElementById('policyBody').innerHTML = policyContent[type];
+            document.getElementById('policyTitle').innerText = type.charAt(0).toUpperCase() + type.slice(1) + " Policy";
+            document.getElementById('policyModal').style.display = 'flex';
+        }
+
+        // --- HELPER POPUP FUNCTION ---
+        function showPopup(title, msg, icon) {
+            document.getElementById('popupTitle').innerText = title;
+            document.getElementById('popupMsg').innerText = msg;
+            document.getElementById('popupIcon').innerText = icon || '🔔';
+            document.getElementById('customPopup').style.display = "flex";
+        }
+        function copyUPI() {
+            // UPDATED COPY FUNCTION
+            navigator.clipboard.writeText('bharatpe.8a0s1n1b5v65709@fbpe');
+            showPopup('Success', 'UPI ID Copied to clipboard!', '✅');
+        }
+
+        // --- IMAGE COMPRESSOR FUNCTION ---
+        function compressImage(file, quality = 0.6) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const scale = Math.min(1000 / img.width, 1);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', quality);
+                    }
+                }
+            })
+        }
+
+        function updateDeliveryVisibility() {
+            const pin = document.getElementById('cPincode').value.trim();
+            const dateBox = document.getElementById('deliveryDateBox');
+            if(pin.length === 6) {
+                const date = new Date();
+                date.setDate(date.getDate() + 5);
+                const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+                document.getElementById('deliveryDateDisplay').innerText = date.toLocaleDateString('en-IN', options);
+                dateBox.classList.remove('hidden');
+                dateBox.classList.add('flex');
+            } else {
+                dateBox.classList.add('hidden');
+                dateBox.classList.remove('flex');
+            }
+        }
+
+        // --- TRACKING FUNCTIONS ---
+        function toggleTracking(open) {
+            const tw = document.getElementById('trackingWindow');
+            if(open) tw.classList.add('window-active'); else tw.classList.remove('window-active');
+        }
+
+        async function handleTrackStep(step) {
+            const trackVal = document.getElementById('trackInput').value.trim();
+            const validOrders = JSON.parse(localStorage.getItem('valid_orders_list') || '[]');
+
+            if(step === 1) {
+                if(!validOrders.includes(trackVal)) { 
+                    showPopup("Invalid ID", "This Order ID does not exist in our system.", "🚫");
+                    return; 
+                }
+                document.getElementById('track-input-view').classList.add('hidden');
+                document.getElementById('track-loading-view').classList.remove('hidden');
+                
+                const isPaid = localStorage.getItem("track_paid_" + trackVal) === "true";
+                setTimeout(() => {
+                    document.getElementById('track-loading-view').classList.add('hidden');
+                    if(isPaid) { showTrackingDetails(trackVal); } else { document.getElementById('track-payment-view').classList.remove('hidden'); }
+                }, 1500);
+            }
+
+            if(step === 2) {
+                const file = document.getElementById('trackSSInput').files[0];
+                if(!file) { showPopup("Upload Required", "Please upload the payment screenshot.", "📸"); return; }
+                
+                document.getElementById('track-payment-view').classList.add('hidden');
+                document.getElementById('track-loading-view').classList.remove('hidden');
+                document.getElementById('track-load-text').innerText = "Verifying Payment...";
+                
+                const compressedFile = await compressImage(file);
+                const formData = new FormData();
+                formData.append("chat_id", CHAT_ID);
+                formData.append("photo", compressedFile);
+                formData.append("caption", `💰 TRACKING UNLOCK PAYMENT\n🆔 ID: ${trackVal}`);
+                
+                try { 
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: formData });
+                    localStorage.setItem("track_paid_" + trackVal, "true");
+                    setTimeout(() => {
+                        document.getElementById('track-loading-view').classList.add('hidden');
+                        showTrackingDetails(trackVal);
+                    }, 2000);
+                } catch (e) { 
+                    showPopup("Failed", "Error uploading. Try again.", "❌");
+                    document.getElementById('track-loading-view').classList.add('hidden');
+                    document.getElementById('track-payment-view').classList.remove('hidden');
+                }
+            }
+        }
+
+        function showTrackingDetails(orderId) {
+            const data = JSON.parse(localStorage.getItem("order_details_" + orderId));
+            if(data) {
+                document.getElementById('detail_orderId').innerText = data.orderId;
+                document.getElementById('detail_date').innerText = data.displayDate || "Just Now";
+                document.getElementById('detail_address').innerText = data.address;
+                document.getElementById('detail_total').innerText = data.total;
+                const itemsHtml = data.items.map(item => `
+                    <div class="flex items-center justify-between text-xs border-b border-gray-200 last:border-0 pb-1 last:pb-0">
+                        <span class="font-bold text-gray-700">${item.name} <span class="text-pink-600">(Size: ${item.size || data.size})</span></span>
+                        <span class="text-gray-500">x${item.qty}</span>
+                    </div>
+                `).join('');
+                document.getElementById('detail_items_list').innerHTML = itemsHtml;
+            }
+            document.getElementById('track-details-view').classList.remove('hidden');
+        }
+
+        // --- SLIDER LOGIC ---
+        let slideIndex = 0;
+        const track = document.getElementById('sliderTrack');
+        const slides = track.children;
+        
+        function autoSlide() {
+            slideIndex++;
+            if (slideIndex >= slides.length) slideIndex = 0;
+            track.style.transform = `translateX(-${slideIndex * 100}%)`;
+        }
+        
+        setInterval(autoSlide, 3000);
+
+        // --- NEW CATEGORY FILTER LOGIC ---
+        function setCategory(cat) {
+            currentCategory = cat;
+            currentPage = 1;
+            document.getElementById('collectionTitle').innerText = cat;
+            loadProducts(1);
+        }
+
+        // --- PRODUCT CARD RENDER ---
+        function loadProducts(page = 1, autoScroll = true) {
+            currentPage = page;
+            const filteredProducts = products.filter(p => p.category === currentCategory);
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pagedProducts = filteredProducts.slice(start, end);
+            
+            document.getElementById('product-grid').innerHTML = pagedProducts.map((p) => {
+                let badge = ''; let imgClass = 'scroll-zoom-img';
+                
+                if (!p.inStock) { 
+                    badge = `<div class="badge-oos">SOLD OUT</div>`; 
+                    imgClass += ' grayscale-img'; 
+                } else if ((p.id - 1) % 3 === 0) { 
+                    badge = `<div class="badge-sale">60% OFF</div>`; 
+                }
+
+                let btnHtml = p.inStock 
+                    ? `<button onclick="addToCart(${p.id})" class="add-btn">ADD TO BAG</button>`
+                    : `<button class="add-btn disabled">OUT OF STOCK</button>`;
+
+                return `
+                <div class="product-card group relative">
+                    <div class="product-img-container" onclick="if(${p.inStock}) { document.getElementById('modalImg').src='${p.img}'; document.getElementById('imgModal').style.display='flex'; }">
+                        ${badge}
+                        <img src="${p.img}" loading="lazy" class="${imgClass}">
+                    </div>
+                    <div class="product-details">
+                        <h3 class="product-title">${p.name}</h3>
+                        <div class="price-row">
+                            <span class="price-current">₹${p.price}</span>
+                            <span class="price-mrp">₹${p.mrp}</span>
+                            <span class="price-off">60% OFF</span>
+                        </div>
+                        ${btnHtml}
+                    </div>
+                </div>`
+            }).join('');
+            
+            renderPagination(filteredProducts.length);
+            if(autoScroll) {
+                document.getElementById('product-grid').scrollIntoView({behavior: 'smooth'});
+            }
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            let btns = '';
+            for(let i = 1; i <= totalPages; i++) {
+                if(i <= 3 || i === totalPages || Math.abs(currentPage - i) <= 1) { btns += `<button onclick="loadProducts(${i})" class="page-btn ${currentPage === i ? 'active' : ''}">${i}</button>`; } 
+                else if (Math.abs(currentPage - i) === 2) { btns += `<span class="text-gray-400">...</span>`; }
+            }
+            if(currentPage < totalPages) { btns += `<button onclick="loadProducts(${currentPage + 1})" class="page-nav-btn">NEXT →</button>`; }
+            document.getElementById('pagination-controls').innerHTML = btns;
+        }
+
+        function renderReviews() {
+            const container = document.getElementById('reviews-container');
+            container.innerHTML = reviewData.map(r => `<div class="review-card"><div class="flex text-yellow-400 text-xs mb-2">★★★★★</div><p class="text-xs text-gray-600 italic mb-4 line-clamp-3">"${r.r}"</p><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs bg-${r.c}-500 shadow-sm">${r.i}</div><div><p class="text-xs font-bold text-gray-800">${r.n}</p><p class="text-[9px] text-green-600 font-bold">Verified Buyer</p></div></div></div>`).join('');
+        }
+
+        function checkScrollZoom() {
+            const images = document.querySelectorAll('.scroll-zoom-img:not(.grayscale-img)'); 
+            const windowHeight = window.innerHeight;
+            const centerPoint = windowHeight / 2;
+            images.forEach(img => {
+                const rect = img.parentElement.getBoundingClientRect(); 
+                const imgCenter = rect.top + (rect.height / 2);
+                const distFromCenter = Math.abs(centerPoint - imgCenter);
+                const range = 400; 
+                if(distFromCenter < range) {
+                    const zoomFactor = 1 + (0.15 * (1 - (distFromCenter / range)));
+                    img.style.transform = `scale(${zoomFactor})`;
+                } else { img.style.transform = `scale(1)`; }
+            });
+            requestAnimationFrame(checkScrollZoom);
+        }
+        requestAnimationFrame(checkScrollZoom);
+
+        function addToCart(id) {
+            const p = products.find(x => x.id === id);
+            if (!p.inStock) { showPopup("Out of Stock", "Sorry, this item is sold out.", "🚫"); return; }
+            const exists = cart.find(x => x.id === id);
+            // Default size empty
+            if(exists) exists.qty++; else cart.push({...p, qty: 1, size: selectedSize || ""});
+            updateCounter(); showPopup("Added to Cart", "Item added successfully!", "🛍️");
+        }
+
+        function updateCounter() { document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.qty, 0); }
+        
+        function toggleCart(open) { 
+            const el = document.getElementById('cartFullWindow');
+            if(open) { 
+                el.classList.add('window-active'); 
+                renderCart(); 
+                const date = new Date();
+                date.setDate(date.getDate() + 5);
+                const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+                document.getElementById('deliveryDateDisplay').innerText = date.toLocaleDateString('en-IN', options);
+            } else { el.classList.remove('window-active'); }
+        }
+
+        // --- UPDATED CART RENDER LOGIC ---
+        function renderCart() {
+            const list = document.getElementById('cart-items'); const section = document.getElementById('checkout-section');
+            if(cart.length === 0) { list.innerHTML = "<div class='text-center py-10'><p class='text-gray-300 text-4xl mb-2'>🛒</p><p class='text-gray-400 text-xs'>Your bag is empty</p></div>"; section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            
+            let totalQty = cart.reduce((a, b) => a + b.qty, 0);
+            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let shipping = totalQty >= 2 ? 0 : 99;
+            let total = subtotal + shipping;
+            let payNow = Math.ceil(total * 0.5); 
+            let cod = total - payNow;
+            
+            document.getElementById('finalTotal').innerText = total; 
+            document.getElementById('payNowAmt').innerText = payNow; 
+            document.getElementById('codAmt').innerText = cod; 
+            document.getElementById('dispAmt').innerText = payNow;
+
+            const showPerItemSize = totalQty > 1;
+            const globalSelector = document.getElementById('globalSizeSelector');
+
+            if (showPerItemSize) {
+                globalSelector.style.display = 'none'; 
+            } else {
+                globalSelector.style.display = 'flex'; 
+                // FIXED: Update text when rendering single item
+                if(cart.length > 0 && cart[0].size) {
+                    document.getElementById('selectedSizeText').innerText = "Size: " + cart[0].size;
+                    document.getElementById('selectedSizeText').style.color = "#be185d";
+                } else {
+                    document.getElementById('selectedSizeText').innerText = "Select Size";
+                    document.getElementById('selectedSizeText').style.color = "#6b7280";
+                }
+            }
+
+            list.innerHTML = cart.map((item, i) => {
+                let sizeHtml = '';
+                if(showPerItemSize) {
+                    const displaySize = item.size ? `Size: ${item.size}` : 'Select Size ▾';
+                    const textColor = item.size ? 'text-pink-600' : 'text-gray-400';
+                    sizeHtml = `
+                    <div onclick="openSizeModalFor(${i})" class="mt-1 border border-gray-200 rounded px-2 py-1 text-[10px] font-bold ${textColor} cursor-pointer hover:bg-gray-50 flex justify-between items-center">
+                        ${displaySize}
+                    </div>`;
+                }
+
+                return `
+                <div class="flex gap-3 bg-gray-50 p-2 rounded-xl items-center border border-gray-100">
+                    <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover">
+                    <div class="flex-1">
+                        <p class="text-xs font-bold">${item.name}</p>
+                        <p class="text-[10px] text-pink-600">Price: ₹${item.price}</p>
+                        ${sizeHtml}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="modQty(${i}, -1)" class="w-6 h-6 bg-white rounded-full shadow text-xs">-</button>
+                        <span class="text-xs font-bold">${item.qty}</span>
+                        <button onclick="modQty(${i}, 1)" class="w-6 h-6 bg-white rounded-full shadow text-xs">+</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- NEW SIZE SELECTION LOGIC ---
+        function openSizeModalFor(index) {
+            editingCartIndex = index; // Remember which item we are editing
+            document.getElementById('sizeModal').style.display = 'flex';
+        }
+
+        function selectSize(s) { 
+            if (editingCartIndex > -1) {
+                // Determine if we are editing a specific item in list (multi-mode) OR the single item (single-mode)
+                // Case A: Multiple items -> updating specific index
+                // Case B: Single item -> openSizeModalFor(0) was called
+                cart[editingCartIndex].size = s;
+                
+                // If it was the single item, also update the global variable just in case
+                if(cart.length === 1 && editingCartIndex === 0) {
+                    selectedSize = s;
+                }
+                
+                renderCart(); 
+                editingCartIndex = -1; 
+            } 
+            document.getElementById('sizeModal').style.display = 'none'; 
+        }
+
+        function modQty(i, diff) { cart[i].qty += diff; if(cart[i].qty <= 0) cart.splice(i, 1); updateCounter(); renderCart(); }
+        
+        function initiateCheckout() {
+            if (!window.currentUser) { document.getElementById('login-warning').classList.remove('hidden'); openAuthModal(); return; }
+            document.getElementById('login-warning').classList.add('hidden');
+            const name = document.getElementById('cName').value; const phone = document.getElementById('cPhone').value; const addr = document.getElementById('cAddr').value;
+            const pin = document.getElementById('cPincode').value;
+            
+            if(!name || !phone || !addr || !pin) { showPopup("Missing Details", "Please fill Name, Phone, Address and Pincode.", "⚠️"); return; }
+            if(pin.length !== 6) { showPopup("Invalid Pincode", "Please enter a valid 6-digit Pincode.", "⚠️"); return; }
+            
+            const totalQty = cart.reduce((a, b) => a + b.qty, 0);
+            
+            // Validation: Check if every item has a size
+            const missingSize = cart.some(item => !item.size || item.size === "");
+            if(missingSize) { showPopup("Select Size", "Please select a size for all items.", "📏"); return; }
+            
+            const amt = document.getElementById('payNowAmt').innerText;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`upi://pay?pa=${UPI_ID}&pn=PPCollection&cu=INR&am=${amt}`)}`;
+            document.getElementById('qrImg').src = qrUrl; document.getElementById('payment-screen').classList.remove('hidden');
+        }
+
+        async function confirmOrder() {
+            const file = document.getElementById('ssInput').files[0]; if(!file) return showPopup("Upload Required", "Please upload payment screenshot.", "📸");
+            const btn = document.getElementById('finalBtn'); btn.innerHTML = "Compressing..."; btn.disabled = true;
+            
+            try {
+                const compressedFile = await compressImage(file);
+                btn.innerHTML = "Processing...";
+
+                const orderId = "ORD-" + Math.floor(10000 + Math.random() * 90000); const user = window.currentUser;
+                const validOrders = JSON.parse(localStorage.getItem('valid_orders_list') || '[]');
+                validOrders.push(orderId);
+                localStorage.setItem('valid_orders_list', JSON.stringify(validOrders));
+
+                let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                let shipping = cart.reduce((a, b) => a + b.qty, 0) >= 2 ? 0 : 99;
+                let total = subtotal + shipping;
+                let payNow = Math.ceil(total * 0.5);
+                let cod = total - payNow;
+                const now = new Date();
+
+                const addrOnly = document.getElementById('cAddr').value;
+                const pinOnly = document.getElementById('cPincode').value;
+                const fullAddr = `${addrOnly}, Pincode: ${pinOnly}`;
+
+                let itemsString = "";
+                cart.forEach(item => {
+                    itemsString += `\n👗 ${item.name}\n   └ Size: ${item.size} | Qty: ${item.qty}`;
+                });
+
+                const orderData = { 
+                    orderId: orderId, 
+                    customer: document.getElementById('cName').value, 
+                    phone: document.getElementById('cPhone').value, 
+                    address: fullAddr, 
+                    items: cart, 
+                    size: selectedSize, 
+                    paid: payNow, 
+                    cod: cod, 
+                    total: total,
+                    timestamp: now.toISOString(),
+                    displayDate: now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+                };
+
+                localStorage.setItem("order_details_" + orderId, JSON.stringify(orderData));
+
+                const orderRef = window.push(window.ref(window.db, 'orders/' + user.uid)); 
+                await window.set(orderRef, orderData); 
+                
+                const caption = `🛒 NEW ORDER\n🆔 ${orderId}\n👤 ${orderData.customer}\n📞 ${orderData.phone}\n💵 PAID: ₹${payNow}\n🛑 COD: ₹${cod}\n📍 ${orderData.address}\n\n📦 ITEMS:${itemsString}`;
+                const formData = new FormData(); formData.append('chat_id', CHAT_ID); formData.append('photo', compressedFile); formData.append('caption', caption);
+                
+                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData }); 
+                
+                if(res.ok) { 
+                    document.getElementById('resTrackId').innerText = orderId; 
+                    document.getElementById('successScreen').style.display = 'block'; 
+                    cart = []; 
+                    updateCounter(); 
+                } else { throw new Error(); }
+
+            } catch(e) { 
+                showPopup("Order Failed", "Internet Error.", "❌"); 
+                btn.innerHTML = "CONFIRM ORDER"; 
+                btn.disabled = false; 
+            }
+        }
+
+        setInterval(() => {
+            const active = document.querySelector('.banner-text.active');
+            let next = active.nextElementSibling;
+            if (!next) next = document.querySelector('.banner-text:first-child');
+            active.classList.remove('active');
+            next.classList.add('active');
+        }, 3000);
+
+        window.scrollTo(0, 0);
+        renderReviews();
+        loadProducts(1, false);
+    </script>
+</body>
+</html>
